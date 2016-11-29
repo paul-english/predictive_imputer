@@ -52,17 +52,15 @@ lint: ## check style with flake8
 
 test: ## run tests quickly with the default Python
 	py.test
-	
 
 test-all: ## run tests on every Python version with tox
 	tox
 
 coverage: ## check code coverage quickly with the default Python
 	coverage run --source predictive_imputer -m pytest
-	
-		coverage report -m
-		coverage html
-		$(BROWSER) htmlcov/index.html
+	coverage report -m
+	coverage html
+	$(BROWSER) htmlcov/index.html
 
 docs: ## generate Sphinx HTML documentation, including API docs
 	rm -f docs/predictive_imputer.rst
@@ -76,8 +74,8 @@ servedocs: docs ## compile the docs watching for changes
 	watchmedo shell-command -p '*.rst' -c '$(MAKE) -C docs html' -R -D .
 
 release: clean ## package and upload a release
-	python setup.py sdist upload
-	python setup.py bdist_wheel upload
+	python setup.py sdist upload -r pypi
+	python setup.py bdist_wheel upload -r pypi
 
 dist: clean ## builds source and wheel package
 	python setup.py sdist

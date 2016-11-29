@@ -9,3 +9,4 @@ Sphinx==1.4.9
 cryptography==1.6
 PyYAML==3.12
 pytest==3.0.4
+numpy==1.11.2
