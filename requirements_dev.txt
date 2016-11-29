@@ -10,3 +10,5 @@ cryptography==1.6
 PyYAML==3.12
 pytest==3.0.4
 numpy==1.11.2
+scipy==0.18.1
+scikit-learn==0.18
