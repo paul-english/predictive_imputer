@@ -9,6 +9,6 @@ Sphinx==1.5.1
 cryptography==1.7.1
 PyYAML==3.12
 pytest==3.0.5
-numpy==1.11.2
+numpy==1.11.3
 scipy==0.18.1
 scikit-learn==0.18.1
