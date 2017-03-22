@@ -33,7 +33,6 @@ class PredictiveImputer(BaseEstimator, TransformerMixin):
         new_imputed = imputed.copy()
         for iter in range(self.max_iter):
             
-            
             if self.f_model == "RandomForest":
                 for i in most_by_nan:
                     X_s = np.delete(new_imputed, i, 1)
@@ -54,7 +53,7 @@ class PredictiveImputer(BaseEstimator, TransformerMixin):
             elif self.f_model == "PCA":
                 self.estimator_ = PCA(n_components=int(np.sqrt(min(X.shape))), whiten=True, **kwargs)
                 self.estimator_.fit(new_imputed)
-                new_imputed[np.isnan(X)] = self.estimator_.inverse_transform(self.estimator_.transform(new_imputed))[np.isnan(X)]
+                new_imputed[X_nan] = self.estimator_.inverse_transform(self.estimator_.transform(new_imputed))[X_nan]
             
             gamma = (np.linalg.norm(new_imputed-imputed, axis = 0)/(self.tol+np.linalg.norm(new_imputed-new_imputed.mean(axis=0), axis=0))).mean()
             self.gamma_.append(gamma)
