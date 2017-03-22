@@ -10,7 +10,7 @@ from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
 
 
 class PredictiveImputer(BaseEstimator, TransformerMixin):
-    def __init__(self, max_iter=10, initial_strategy='mean', tol=1e-6, f_model = "RandomForest"):
+    def __init__(self, max_iter=10, initial_strategy='mean', tol=1e-6, f_model="RandomForest"):
         self.max_iter = max_iter
         self.initial_strategy = initial_strategy
         self.initial_imputer = Imputer(strategy=initial_strategy)
@@ -47,7 +47,7 @@ class PredictiveImputer(BaseEstimator, TransformerMixin):
                     if self.f_model == "RandomForest":
                         estimator_ = RandomForestRegressor(n_estimators=50, n_jobs=-1, random_state=i, **kwargs)
                     elif self.f_model == "KNN":
-                        estimator_ = KNeighborsRegressor(n_neighbors = min(5, sum(~y_nan)), **kwargs)
+                        estimator_ = KNeighborsRegressor(n_neighbors=min(5, sum(~y_nan)), **kwargs)
                         
                     estimator_.fit(X_train, y_train)
 
@@ -60,7 +60,7 @@ class PredictiveImputer(BaseEstimator, TransformerMixin):
                 self.estimator_.fit(new_imputed)
                 new_imputed[X_nan] = self.estimator_.inverse_transform(self.estimator_.transform(new_imputed))[X_nan]
             
-            gamma = (np.linalg.norm(new_imputed-imputed, axis = 0)/(self.tol+np.linalg.norm(new_imputed-new_imputed.mean(axis=0), axis=0))).mean()
+            gamma = ((new_imputed-imputed)**2/(self.tol+new_imputed.var(axis=0))).sum()/(self.tol+X_nan.sum())
             self.gamma_.append(gamma)
             
             if np.abs(np.diff(self.gamma_[-2:])) < self.tol:
