@@ -18,8 +18,9 @@ class PredictiveImputer(BaseEstimator, TransformerMixin):
 
     def fit(self, X, y=None, **kwargs):
         X = check_array(X, dtype=np.float64, force_all_finite=False)
-
-        most_by_nan = np.isnan(X).sum(axis=0).argsort()[::-1]
+        
+        X_nan = np.isnan(X)
+        most_by_nan = X_nan.sum(axis=0).argsort()[::-1]
         
         imputed = self.initial_imputer.fit_transform(X)
 
@@ -32,21 +33,22 @@ class PredictiveImputer(BaseEstimator, TransformerMixin):
         new_imputed = imputed.copy()
         for iter in range(self.max_iter):
             
+            
             if self.f_model == "RandomForest":
                 for i in most_by_nan:
                     X_s = np.delete(new_imputed, i, 1)
-                    y_s = X[:, i]
+                    y_nan = X_nan[:, i]
 
-                    X_train = X_s[~np.isnan(y_s)]
-                    y_train = y_s[~np.isnan(y_s)]
+                    X_train = X_s[~y_nan]
+                    y_train = new_imputed[~y_nan, i]
 
-                    X_unk = X_s[np.isnan(y_s)]
+                    X_unk = X_s[y_nan]
 
                     clf = RandomForestRegressor(n_estimators=50, n_jobs=-1, random_state=i, **kwargs)
                     clf.fit(X_train, y_train)
 
                     if len(X_unk) > 0:
-                        new_imputed[np.isnan(y_s), i] = clf.predict(X_unk)
+                        new_imputed[y_nan, i] = clf.predict(X_unk)
                     self.estimators_[i] = clf
                     
             elif self.f_model == "PCA":
@@ -68,18 +70,20 @@ class PredictiveImputer(BaseEstimator, TransformerMixin):
         if X.shape[1] != self.statistics_.shape[1]:
             raise ValueError("X has %d features per sample, expected %d"
                              % (X.shape[1], self.statistics_.shape[1]))
+        
+        X_nan = np.isnan(X)
         imputed = self.initial_imputer.fit_transform(X)
         
         if self.f_model == "RandomForest":
             for i, clf in enumerate(self.estimators_):
                 X_s = np.delete(imputed, i, 1)
-                y_s = X[:, i]
+                y_nan = X_nan[:, i]
 
-                X_unk = X_s[np.isnan(y_s)]
+                X_unk = X_s[y_nan]
                 if len(X_unk) > 0:
-                    X[np.isnan(y_s), i] = clf.predict(X_unk)
+                    X[y_nan, i] = clf.predict(X_unk)
                     
         elif self.f_model == "PCA":
-            X[np.isnan(X)] = self.estimator_.inverse_transform(self.estimator_.transform(imputed))[np.isnan(X)]
+            X[X_nan] = self.estimator_.inverse_transform(self.estimator_.transform(imputed))[X_nan]
 
         return X
