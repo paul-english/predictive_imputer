@@ -3,6 +3,7 @@ import numpy as np
 
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.decomposition import PCA
+from sklearn.neighbors import KNeighborsRegressor
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.preprocessing import Imputer
 from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
@@ -27,13 +28,13 @@ class PredictiveImputer(BaseEstimator, TransformerMixin):
         self.statistics_ = np.ma.getdata(X)
         self.gamma_ = []
         
-        if self.f_model == "RandomForest":
+        if self.f_model in ["RandomForest", "KNN"]:
             self.estimators_ = [None]*X.shape[1]
         
         new_imputed = imputed.copy()
         for iter in range(self.max_iter):
             
-            if self.f_model == "RandomForest":
+            if self.f_model in ["RandomForest", "KNN"]:
                 for i in most_by_nan:
                     X_s = np.delete(new_imputed, i, 1)
                     y_nan = X_nan[:, i]
@@ -42,13 +43,17 @@ class PredictiveImputer(BaseEstimator, TransformerMixin):
                     y_train = new_imputed[~y_nan, i]
 
                     X_unk = X_s[y_nan]
-
-                    clf = RandomForestRegressor(n_estimators=50, n_jobs=-1, random_state=i, **kwargs)
-                    clf.fit(X_train, y_train)
+                    
+                    if self.f_model == "RandomForest":
+                        estimator_ = RandomForestRegressor(n_estimators=50, n_jobs=-1, random_state=i, **kwargs)
+                    elif self.f_model == "KNN":
+                        estimator_ = KNeighborsRegressor(n_neighbors = min(5, sum(~y_nan)), **kwargs)
+                        
+                    estimator_.fit(X_train, y_train)
 
                     if len(X_unk) > 0:
-                        new_imputed[y_nan, i] = clf.predict(X_unk)
-                    self.estimators_[i] = clf
+                        new_imputed[y_nan, i] = estimator_.predict(X_unk)
+                    self.estimators_[i] = estimator_
                     
             elif self.f_model == "PCA":
                 self.estimator_ = PCA(n_components=int(np.sqrt(min(X.shape))), whiten=True, **kwargs)
@@ -73,14 +78,14 @@ class PredictiveImputer(BaseEstimator, TransformerMixin):
         X_nan = np.isnan(X)
         imputed = self.initial_imputer.fit_transform(X)
         
-        if self.f_model == "RandomForest":
-            for i, clf in enumerate(self.estimators_):
+        if self.f_model in ["RandomForest", "KNN"]:
+            for i, estimator_ in enumerate(self.estimators_):
                 X_s = np.delete(imputed, i, 1)
                 y_nan = X_nan[:, i]
 
                 X_unk = X_s[y_nan]
                 if len(X_unk) > 0:
-                    X[y_nan, i] = clf.predict(X_unk)
+                    X[y_nan, i] = estimator_.predict(X_unk)
                     
         elif self.f_model == "PCA":
             X[X_nan] = self.estimator_.inverse_transform(self.estimator_.transform(imputed))[X_nan]
