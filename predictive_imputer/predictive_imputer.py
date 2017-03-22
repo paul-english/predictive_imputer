@@ -2,13 +2,14 @@
 import numpy as np
 
 from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.decomposition import PCA
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.preprocessing import Imputer
 from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
 
 
 class PredictiveImputer(BaseEstimator, TransformerMixin):
-    def __init__(self, max_iter=10, initial_strategy='mean', tol=0.001, f_model = "RandomForest"):
+    def __init__(self, max_iter=10, initial_strategy='mean', tol=1e-6, f_model = "RandomForest"):
         self.max_iter = max_iter
         self.initial_strategy = initial_strategy
         self.initial_imputer = Imputer(strategy=initial_strategy)
@@ -30,7 +31,6 @@ class PredictiveImputer(BaseEstimator, TransformerMixin):
         
         new_imputed = imputed.copy()
         for iter in range(self.max_iter):
-            last_imputed = new_imputed.copy()
             
             if self.f_model == "RandomForest":
                 for i in most_by_nan:
@@ -53,13 +53,11 @@ class PredictiveImputer(BaseEstimator, TransformerMixin):
                 self.estimator_ = PCA(n_components=int(np.sqrt(min(X.shape))), whiten=True, **kwargs)
                 self.estimator_.fit(new_imputed)
                 new_imputed[np.isnan(X)] = self.estimator_.inverse_transform(self.estimator_.transform(new_imputed))[np.isnan(X)]
-                
-            diff = np.linalg.norm(new_imputed-last_imputed)/new_imputed.std()
-            if diff < self.tol:
-                break
             
-            gamma = np.linalg.norm(new_imputed-imputed)/new_imputed.std()
             self.gamma_.append(gamma)
+            
+            if np.abs(np.diff(self.gamma_[-2:])) < self.tol:
+                break
 
         return self
 
