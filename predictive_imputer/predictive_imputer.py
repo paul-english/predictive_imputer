@@ -54,6 +54,7 @@ class PredictiveImputer(BaseEstimator, TransformerMixin):
                 self.estimator_.fit(new_imputed)
                 new_imputed[np.isnan(X)] = self.estimator_.inverse_transform(self.estimator_.transform(new_imputed))[np.isnan(X)]
             
+            gamma = (np.linalg.norm(new_imputed-imputed, axis = 0)/(self.tol+np.linalg.norm(new_imputed-new_imputed.mean(axis=0), axis=0))).mean()
             self.gamma_.append(gamma)
             
             if np.abs(np.diff(self.gamma_[-2:])) < self.tol:
