@@ -18,7 +18,7 @@ test_requirements = [
 
 setup(
     name='predictive_imputer',
-    version='0.1.0',
+    version='0.2.0',
     description="Predictive imputation of missing values with sklearn interface. This is a simple implementation of the idea presented in the MissForest R package.",
     long_description=readme + '\n\n' + history,
     author="Paul English",
