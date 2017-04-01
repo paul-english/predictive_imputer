@@ -28,7 +28,8 @@ Predictive imputation of missing values with sklearn interface. This is a simple
 Features
 --------
 
-* Basic imputation using RandomForestRegressor
+* Basic imputation using RandomForest, KNN, or PCA
+* Early stopping if model has reached some convergence
 
 Credits
 ---------
