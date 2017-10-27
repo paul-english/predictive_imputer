@@ -27,13 +27,24 @@ X = np.array([
 def test_predictive_imputer():
     imputer = predictive_imputer.PredictiveImputer()
     X_trans = imputer.fit(X).transform(X.copy())
+    assert isinstance(X, np.array)
+    assert X_trans.shape == X.shape
 
 def test_model_options():
     imputer = predictive_imputer.PredictiveImputer(f_model="RandomForest")
     X_trans = imputer.fit(X).transform(X.copy())
+    assert isinstance(X, np.array)
+    assert X_trans.shape == X.shape
+    assert no np.any(np.isnan(X_trans))
 
     imputer = predictive_imputer.PredictiveImputer(f_model="KNN")
     X_trans = imputer.fit(X).transform(X.copy())
+    assert isinstance(X, np.array)
+    assert X_trans.shape == X.shape
+    assert no np.any(np.isnan(X_trans))
 
     imputer = predictive_imputer.PredictiveImputer(f_model="PCA")
     X_trans = imputer.fit(X).transform(X.copy())
+    assert isinstance(X, np.array)
+    assert X_trans.shape == X.shape
+    assert no np.any(np.isnan(X_trans))
