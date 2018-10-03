@@ -72,7 +72,7 @@ class PredictiveImputer(BaseEstimator, TransformerMixin):
                              % (X.shape[1], self.statistics_.shape[1]))
 
         X_nan = np.isnan(X)
-        imputed = self.initial_imputer.fit_transform(X)
+        imputed = self.initial_imputer.transform(X)
 
         if len(self.estimators_) > 1:
             for i, estimator_ in enumerate(self.estimators_):
