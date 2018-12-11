@@ -10,8 +10,8 @@ Tests for `predictive_imputer` module.
 
 import numpy as np
 
-import pytest
 from predictive_imputer import predictive_imputer
+import pytest
 
 X = np.array([
     [0, np.nan, np.nan],  # odd: implicit zero
@@ -24,12 +24,14 @@ X = np.array([
     [-1, 2, np.nan],   # even: crossing neg and pos
 ]).transpose()
 
+
 def test_predictive_imputer():
     imputer = predictive_imputer.PredictiveImputer()
     X_trans = imputer.fit(X).transform(X.copy())
     assert isinstance(X_trans, np.ndarray)
     assert X_trans.shape == X.shape
     assert not np.any(np.isnan(X_trans))
+
 
 def test_model_options():
     models = ['RandomForest', 'KNN', 'PCA']
