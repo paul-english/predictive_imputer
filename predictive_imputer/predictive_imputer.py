@@ -5,7 +5,7 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.decomposition import PCA
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.neighbors import KNeighborsRegressor
-from sklearn.preprocessing import Imputer
+from sklearn.impute import SimpleImputer
 from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
 
 
@@ -13,7 +13,7 @@ class PredictiveImputer(BaseEstimator, TransformerMixin):
     def __init__(self, max_iter=10, initial_strategy='mean', tol=1e-3, f_model="RandomForest"):
         self.max_iter = max_iter
         self.initial_strategy = initial_strategy
-        self.initial_imputer = Imputer(strategy=initial_strategy)
+        self.initial_imputer = SimpleImputer(strategy=initial_strategy)
         self.tol = tol
         self.f_model = f_model
 
